@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phishing Email Detector</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+--primary: #4361ee;
+--secondary: #3f37c9;
+--danger: #f72585;
+--success: #4cc9f0;
+--light: #f8f9fa;
+--dark: #212529;
+--gray: #6c757d;
+}
+
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: 'Poppins', sans-serif;
+}
+
+body {
+background-color: #f5f7fa;
+color: var(--dark);
+line-height: 1.6;
+}
+
+.container {
+max-width: 1200px;
+margin: 0 auto;
+padding: 2rem;
+}
+
+header {
+text-align: center;
+margin-bottom: 3rem;
+}
+
+h1 {
+font-size: 2.5rem;
+color: var(--primary);
+margin-bottom: 1rem;
+}
+
+.subtitle {
+color: var(--gray);
+font-size: 1.1rem;
+max-width: 700px;
+margin: 0 auto;
+}
+
+.main-content {
+display: flex;
+flex-direction: column;
+gap: 2rem;
+}
+
+.card {
+background: white;
+border-radius: 10px;
+box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+padding: 2rem;
+}
+
+.input-section {
+display: flex;
+flex-direction: column;
+gap: 1.5rem;
+}
+
+.input-group {
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+}
+
+label {
+font-weight: 500;
+color: var(--dark);
+}
+
+textarea {
+min-height: 200px;
+padding: 1rem;
+border: 1px solid #ddd;
+border-radius: 8px;
+resize: vertical;
+font-size: 1rem;
+transition: border 0.3s ease;
+}
+
+textarea:focus {
+outline: none;
+border-color: var(--primary);
+}
+
+.btn {
+padding: 0.8rem 1.5rem;
+border: none;
+border-radius: 8px;
+font-size: 1rem;
+font-weight: 500;
+cursor: pointer;
+transition: all 0.3s ease;
+align-self: flex-start;
+}
+
+.btn-primary {
+background-color: var(--primary);
+color: white;
+}
+
+.btn-primary:hover {
+background-color: var(--secondary);
+transform: translateY(-2px);
+}
+
+.results-section {
+display: none;
+}
+
+.result-card {
+padding: 1.5rem;
+border-radius: 8px;
+margin-bottom: 1.5rem;
+}
+
+.phishing {
+background-color: rgba(247, 37, 133, 0.1);
+border-left: 4px solid var(--danger);
+}
+
+.safe {
+background-color: rgba(76, 201, 240, 0.1);
+border-left: 4px solid var(--success);
+}
+
+.result-title {
+font-size: 1.3rem;
+margin-bottom: 0.5rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+
+.result-icon {
+font-size: 1.5rem;
+}
+
+.danger {
+color: var(--danger);
+}
+
+.success {
+color: var(--success);
+}
+
+.confidence {
+font-weight: 500;
+margin-top: 0.5rem;
+}
+
+.model-comparison {
+margin-top: 2rem;
+}
+
+.comparison-table {
+width: 100%;
+border-collapse: collapse;
+margin-top: 1rem;
+}
+
+.comparison-table th, .comparison-table td {
+padding: 0.75rem;
+text-align: left;
+border-bottom: 1px solid #ddd;
+}
+
+.comparison-table th {
+background-color: #f8f9fa;
+font-weight: 600;
+}
+
+.comparison-table tr:hover {
+background-color: #f8f9fa;
+}
+
+.badge {
+display: inline-block;
+padding: 0.35rem 0.65rem;
+font-size: 0.75rem;
+font-weight: 600;
+line-height: 1;
+text-align: center;
+white-space: nowrap;
+vertical-align: baseline;
+border-radius: 50rem;
+}
+
+.badge-success {
+color: white;
+background-color: var(--success);
+}
+
+.badge-danger {
+color: white;
+background-color: var(--danger);
+}
+
+.loading {
+display: none;
+text-align: center;
+padding: 1rem;
+}
+
+.spinner {
+width: 40px;
+height: 40px;
+margin: 0 auto;
+border: 4px solid rgba(0, 0, 0, 0.1);
+border-left-color: var(--primary);
+border-radius: 50%;
+animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+to { transform: rotate(360deg); }
+}
+
+footer {
+text-align: center;
+margin-top: 3rem;
+color: var(--gray);
+font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+.container {
+padding: 1rem;
+}
+
+h1 {
+font-size: 2rem;
+}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+<h1>Phishing Email Detector</h1>
+<p class="subtitle">
+Protect yourself from malicious emails using our advanced machine learning models that analyze email content for phishing attempts.
+</p>
+</header>
+
+<main class="main-content">
+<div class="card input-section">
+<div class="input-group">
+<label for="email-text">Enter Email Text to Analyze</label>
+<textarea id="email-text" placeholder="Paste the content of the email you want to analyze here..."></textarea>
+</div>
+<button id="analyze-btn" class="btn btn-primary">Analyze Email</button>
+</div>
+
+<div class="loading" id="loading">
+<div class="spinner"></div>
+<p>Analyzing email content...</p>
+</div>
+
+<div class="card results-section" id="results-section">
+<div class="result-card" id="result-display">
+<h3 class="result-title">
+<span class="result-icon" id="result-icon">!</span>
+<span id="result-text">Result will appear here</span>
+</h3>
+<p id="result-description">Detailed analysis will be shown here.</p>
+<p class="confidence">Confidence: <span id="confidence-value">0%</span></p>
+</div>
+
+<div class="model-comparison">
+<h3>Model Comparison</h3>
+<p>Our system uses two different machine learning models to detect phishing attempts. Here's how they performed on your email:</p>
+
+<table class="comparison-table">
+<thead>
+<tr>
+<th>Model</th>
+<th>Prediction</th>
+<th>Accuracy</th>
+<th>Precision</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multinomial Naive Bayes</td>
+<td><span class="badge" id="nb-badge">Unknown</span></td>
+<td id="nb-accuracy">-</td>
+<td id="nb-precision">-</td>
+</tr>
+<tr>
+<td>Support Vector Machine</td>
+<td><span class="badge" id="svm-badge">Unknown</span></td>
+<td id="svm-accuracy">-</td>
+<td id="svm-precision">-</td>
+</tr>
+</tbody>
+</table>
+
+<p id="final-verdict" style="margin-top: 1rem; font-weight: 500;"></p>
+</div>
+</div>
+</main>
+
+<footer>
+<p>Project By: Waniaa Masood (F2023-533), Rameen Safdar (F2023-383), Zoha Humayun (F2023-035)</p>
+</footer>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+const analyzeBtn = document.getElementById('analyze-btn');
+const emailText = document.getElementById('email-text');
+const resultsSection = document.getElementById('results-section');
+const loadingSection = document.getElementById('loading');
+const resultDisplay = document.getElementById('result-display');
+const resultIcon = document.getElementById('result-icon');
+const resultText = document.getElementById('result-text');
+const resultDescription = document.getElementById('result-description');
+const confidenceValue = document.getElementById('confidence-value');
+const nbBadge = document.getElementById('nb-badge');
+const svmBadge = document.getElementById('svm-badge');
+const nbAccuracy = document.getElementById('nb-accuracy');
+const nbPrecision = document.getElementById('nb-precision');
+const svmAccuracy = document.getElementById('svm-accuracy');
+const svmPrecision = document.getElementById('svm-precision');
+const finalVerdict = document.getElementById('final-verdict');
+
+analyzeBtn.addEventListener('click', function() {
+const text = emailText.value.trim();
+
+if (!text) {
+alert('Please enter some email text to analyze.');
+return;
+}
+
+// Show loading, hide results
+loadingSection.style.display = 'block';
+resultsSection.style.display = 'none';
+
+// Call the backend API
+analyzeEmail(text);
+});
+
+function analyzeEmail(text) {
+// In a real implementation, this would call your actual backend API
+// For now, we'll simulate the response based on your notebook's output
+
+// Simulate API delay
+setTimeout(() => {
+// This is a mock response - replace with actual API call
+const mockResponse = {
+nb_prediction: Math.random() > 0.5 ? 1 : 0,
+svm_prediction: Math.random() > 0.5 ? 1 : 0,
+nb_accuracy: (Math.random() * 0.2 + 0.8).toFixed(2), // Random between 0.8-1.0
+nb_precision: (Math.random() * 0.2 + 0.8).toFixed(2),
+svm_accuracy: (Math.random() * 0.2 + 0.8).toFixed(2),
+svm_precision: (Math.random() * 0.2 + 0.8).toFixed(2),
+};
+
+// Process the response
+processResults(mockResponse);
+
+// Hide loading, show results
+loadingSection.style.display = 'none';
+resultsSection.style.display = 'block';
+}, 1500);
+
+// Actual implementation would look like:
+/*
+fetch('/api/analyze', {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json',
+},
+body: JSON.stringify({ text: text })
+})
+.then(response => response.json())
+.then(data => {
+processResults(data);
+loadingSection.style.display = 'none';
+resultsSection.style.display = 'block';
+})
+.catch(error => {
+console.error('Error:', error);
+loadingSection.style.display = 'none';
+alert('An error occurred while analyzing the email.');
+});
+*/
+}
+
+function processResults(data) {
+// Determine final result (in a real app, you might have more complex logic)
+const finalPrediction = data.svm_accuracy > data.nb_accuracy ?
+data.svm_prediction : data.nb_prediction;
+const finalConfidence = finalPrediction === data.svm_prediction ?
+data.svm_accuracy : data.nb_accuracy;
+
+// Display the main result
+if (finalPrediction === 1) {
+// Phishing
+resultDisplay.className = 'result-card phishing';
+resultIcon.textContent = '⚠️';
+resultIcon.className = 'result-icon danger';
+resultText.textContent = 'Phishing Email Detected!';
+resultText.className = 'danger';
+resultDescription.textContent = 'This email contains characteristics commonly found in phishing attempts. Be cautious about any links or attachments.';
+} else {
+// Safe
+resultDisplay.className = 'result-card safe';
+resultIcon.textContent = '✓';
+resultIcon.className = 'result-icon success';
+resultText.textContent = 'Safe Email';
+resultText.className = 'success';
+resultDescription.textContent = 'This email appears to be legitimate. However, always remain vigilant with unexpected emails.';
+}
+
+confidenceValue.textContent = `${(finalConfidence * 100).toFixed(1)}%`;
+
+// Display model comparison
+displayModelResult('nb', data.nb_prediction, data.nb_accuracy, data.nb_precision);
+displayModelResult('svm', data.svm_prediction, data.svm_accuracy, data.svm_precision);
+
+// Show final verdict
+if (data.svm_accuracy > data.nb_accuracy && data.svm_precision > data.nb_precision) {
+finalVerdict.textContent = "SVM is the better model for phishing email detection based on accuracy and precision.";
+} else {
+finalVerdict.textContent = "Multinomial Naive Bayes is the better model for phishing email detection based on accuracy and precision.";
+}
+}
+
+function displayModelResult(model, prediction, accuracy, precision) {
+const badgeElement = model === 'nb' ? nbBadge : svmBadge;
+const accuracyElement = model === 'nb' ? nbAccuracy : svmAccuracy;
+const precisionElement = model === 'nb' ? nbPrecision : svmPrecision;
+
+if (prediction === 1) {
+badgeElement.textContent = 'Phishing';
+badgeElement.className = 'badge badge-danger';
+} else {
+badgeElement.textContent = 'Safe';
+badgeElement.className = 'badge badge-success';
+}
+
+accuracyElement.textContent = `${(accuracy * 100).toFixed(1)}%`;
+precisionElement.textContent = `${(precision * 100).toFixed(1)}%`;
+}
+});
+</script>
+</body>
+</html>
